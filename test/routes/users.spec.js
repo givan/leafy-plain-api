@@ -50,7 +50,7 @@ describe('GET /users', () => {
         try {
           expect(res).to.have.status(200);
           expect(res).to.have.header('content-type', 'application/json; charset=utf-8');
-          expect(res.body).to.be.an('array').with.length.greaterThan(0);
+          expect(res.body).to.be.an('array');
           done();
         }
         catch (err) {
