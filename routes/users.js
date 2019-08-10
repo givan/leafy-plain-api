@@ -21,11 +21,6 @@ router.get('/generate', (req, res) => {
       }
     );
   });
-
-  // make a call to go fetch the new user (s)
-  // when this is done, store the result into Redis for future fetches
-
-  // parallel call to go fetch all existing users
 });
 
 router.get('/', (req, res) => {
@@ -37,11 +32,6 @@ router.get('/', (req, res) => {
 
     res.json(result);
   });
-
-  // make a call to go fetch the new user (s)
-  // when this is done, store the result into Redis for future fetches
-
-  // parallel call to go fetch all existing users
 });
 
 router.post('/', (req, res) => {

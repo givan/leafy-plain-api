@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Redis = require('ioredis');
 
+const USERS_SET = "users";
+
 class UserCache {
   static createInstance() {
     // read the connections tring from the ENV variables (future have a config file and store it there)
@@ -19,7 +21,7 @@ class UserCache {
 
   getAll(cb) {
     // go fetch thie list of users from Redis
-    this._redisClient.keys("users:*", (err, result) => {
+    this._redisClient.smembers(USERS_SET, (err, result) => {
       if (err) {
         return (cb(err));
       }
@@ -49,6 +51,8 @@ class UserCache {
   store(user, cb) {
 
     const userKey = `users:${user.id}`;
+
+    // first store the user data as regular string value
     this._redisClient.set(userKey, JSON.stringify(user),
       (err, res) => {
         if (err) {
@@ -57,7 +61,15 @@ class UserCache {
         }
 
         if (res === "OK") {
-          return cb(null, user);
+          // now store the user id into the USERS set for later retrieval
+          this._redisClient.sadd(USERS_SET, userKey, (err, result) => {
+            if (err) {
+              return cb(err); // we should think about deleting the STRING for this user as well (stale)
+            }
+
+            // succesfully added the new user to the Redis index and the user data
+            cb(null, user);
+          });
         } else {
           return cb(`Failed storing user: ${user.id}`, null);
         }
