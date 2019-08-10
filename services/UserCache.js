@@ -1,7 +1,8 @@
 const User = require('../models/User');
 const Redis = require('ioredis');
 
-const USERS_SET = "users";
+const USERS_SET = "users"; // TODO: put this in a config
+const USER_EXPIRY_TIME_SEC = 30; // TODO: put this in a config
 
 class UserCache {
   static createInstance() {
@@ -12,11 +13,12 @@ class UserCache {
 
     //"redis://:u2M78NRUEyWkQYTa63ASnQXHFzRMsdKP5MLda2VsEZ4=@leafly.redis.cache.windows.net"
     console.log(`Redis conn string: ${redisConnString}`);
-    return new UserCache(new Redis(redisConnString));
+    return new UserCache(new Redis(redisConnString), USER_EXPIRY_TIME_SEC);
   }
 
-  constructor(redisClient) {
+  constructor(redisClient, userDataExpiryTimeSecs) {
     this._redisClient = redisClient;
+    this._userDataExpirationTimeSecs = userDataExpiryTimeSecs; // in seconds
   }
 
   getAll(cb) {
@@ -34,9 +36,11 @@ class UserCache {
 
           let foundUsers = [];
           results.forEach((userData) => {
-            let parsedUser = JSON.parse(userData);
-            let user = new User(parsedUser.name, parsedUser.phone, parsedUser.id);
-            foundUsers.push(user);
+            if (userData !== null) { // guard against expired keys
+              let parsedUser = JSON.parse(userData);
+              let user = new User(parsedUser.name, parsedUser.phone, parsedUser.id);
+              foundUsers.push(user);
+            }
           });
 
           cb(null, foundUsers);
@@ -53,7 +57,7 @@ class UserCache {
     const userKey = `users:${user.id}`;
 
     // first store the user data as regular string value
-    this._redisClient.set(userKey, JSON.stringify(user),
+    this._redisClient.setex(userKey, this._userDataExpirationTimeSecs, JSON.stringify(user),
       (err, res) => {
         if (err) {
           // add logging
