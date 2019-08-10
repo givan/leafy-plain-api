@@ -7,16 +7,21 @@ const userGenerator = UserGenerator.createInstance();
 
 const router = Router();
 router.get('/generate', (req, res) => {
-  const count = req.query.count ? req.query.count : -1;
+  const countStr = req.query.count ? req.query.count : 1;
+  // make sure it's a valid int greater than 0
+  let count = 1; // default to 1 new user
+  if (req.query.count !== undefined || req.query.count != null || Number.parseInt(req.query.count) > 0) {
+    count = Number.parseInt(req.query.count);
+  }
 
-  userGenerator.generateNewUser(1, (err, result) => {
+  userGenerator.generateNewUsers(count, (err, result) => {
     if (err) {
       return res.status(400).end();
     }
 
     res.json(
       {
-        current: result.newUser,
+        current: result.newUsers,
         previous: result.existingUsers
       }
     );

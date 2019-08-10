@@ -14,7 +14,24 @@ describe('GET /users/generate', () => {
           expect(res).to.have.status(200);
           expect(res).to.have.header('content-type', 'application/json; charset=utf-8');
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.property('current').and.to.be.an('object');
+          expect(res.body).to.have.property('current').and.to.be.an('array');
+          expect(res.body).to.have.property('previous').and.to.be.an('array');
+          done();
+        }
+        catch (err) {
+          done(err);
+        }
+      });
+  });
+  it('generates two new users', (done) => {
+    chai.request(app)
+      .get('/api/v1/users/generate?count=2')
+      .end((err, res) => {
+        try {
+          expect(res).to.have.status(200);
+          expect(res).to.have.header('content-type', 'application/json; charset=utf-8');
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.property('current').and.to.be.an('array').with.length(2);
           expect(res.body).to.have.property('previous').and.to.be.an('array');
           done();
         }

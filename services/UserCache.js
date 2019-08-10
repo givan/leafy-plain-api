@@ -29,19 +29,31 @@ class UserCache {
       }
 
       if (result.length > 0) {
-        this._redisClient.mget(result, (err, results) => {
+        this._redisClient.mget(result, (err, userKeys) => {
           if (err) {
             return cb(err);
           }
 
+          let missingUsers = [];
           let foundUsers = [];
-          results.forEach((userData) => {
+          for (let index = 0; index < userKeys.length; index++) {
+            const userData = userKeys[index];
             if (userData !== null) { // guard against expired keys
               let parsedUser = JSON.parse(userData);
               let user = new User(parsedUser.name, parsedUser.phone, parsedUser.id);
               foundUsers.push(user);
+            } else {
+              // get the missing user key from the result returned from SMEMBERS
+              missingUsers.push(result[index]);
             }
-          });
+          }
+          
+          // if we found any missing users, remove them from the SET (we don't need to wait for this to complete)
+          if (missingUsers.length > 0) {
+            this._redisClient.srem(USERS_SET, missingUsers, (err) => {
+              console.error(`Failed removing missing users: ${err}`);
+            });
+          }
 
           cb(null, foundUsers);
         });
