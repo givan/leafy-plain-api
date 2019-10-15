@@ -14,7 +14,9 @@ const Redis = require("ioredis");
 describe('UserCache class', () => {
 
   const userCache = UserCache.createInstance();
-  const redis = new Redis("redis://:u2M78NRUEyWkQYTa63ASnQXHFzRMsdKP5MLda2VsEZ4=@leafly.redis.cache.windows.net")
+  
+  const redis = new Redis(process.env.REDIS_CONN_STR);
+  console.log(`REDIS_CONN_STR: ${process.env.REDIS_CONN_STR}`);
 
   it('add a new user', (done) => {
 
