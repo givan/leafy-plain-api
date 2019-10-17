@@ -23,9 +23,10 @@
     "chai-like": "^1.1.1",
     "chai-things": "^0.2.0",
     "eslint": "^5.16.0",
-    "eslint-utils": ">=1.4.1",
     "eslint-config-airbnb-base": "^13.2.0",
     "eslint-plugin-import": "^2.18.2",
-    "mocha": "^6.2.0"
+    "eslint-utils": ">=1.4.1",
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1"
   }
 }
